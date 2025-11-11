@@ -9,21 +9,36 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+/**
+ * Author: Pablo Aguilar
+ * Fecha: 11/11/2025
+ * Descripción:
+ * Servlet que maneja el cierre de sesión de usuarios.
+ * Elimina la cookie de autenticación y muestra página de confirmación.
+ */
 @WebServlet("/logout")
 public class LogoutServlet extends HttpServlet {
 
+    /**
+     * Maneja solicitudes GET para el cierre de sesión.
+     * Elimina la cookie de usuario y muestra página de confirmación.
+     *
+     * @param req Solicitud HTTP recibida
+     * @param resp Respuesta HTTP a generar
+     */
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        // Eliminar cookie
+        // Eliminar cookie estableciendo una cookie vacía con tiempo de expiración 0
         Cookie cookie = new Cookie("username", "");
-        cookie.setMaxAge(0);
-        resp.addCookie(cookie);
+        cookie.setMaxAge(0);  // Establecer expiración inmediata
+        resp.addCookie(cookie);  // Agregar cookie a la respuesta para eliminarla
 
-        // Mostrar página de logout
+        // Mostrar página de confirmación de logout
         resp.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = resp.getWriter()) {
+            // Generar página HTML de confirmación con Bootstrap
             out.println("<!DOCTYPE html>");
             out.println("<html lang='es'>");
             out.println("<head>");

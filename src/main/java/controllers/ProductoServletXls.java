@@ -12,29 +12,51 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
+/**
+ * Author: Pablo Aguilar
+ * Fecha: 11/11/2025
+ * Descripción:
+ * Servlet que maneja la visualización y exportación de productos en formato HTML y Excel.
+ * Proporciona diferentes vistas según el estado de autenticación del usuario.
+ */
 @WebServlet({"/productos.html", "/productos.xls"})
 public class ProductoServletXls extends HttpServlet {
 
+    /**
+     * Maneja solicitudes GET para mostrar productos en HTML o exportar a Excel.
+     * Adapta el contenido según la autenticación del usuario y el formato solicitado.
+     *
+     * @param req Solicitud HTTP recibida
+     * @param resp Respuesta HTTP con productos en HTML o Excel
+     */
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
+        // Obtener lista de productos desde el servicio
         ProductoService service = new ProductoServiceImplement();
         List<Producto> productos = service.listaProductos();
+
+        // Verificar estado de autenticación del usuario
         boolean logueado = estaLogueado(req);
 
+        // Determinar el formato de salida basado en la URL solicitada
         String servletPath = req.getServletPath();
         boolean esXls = servletPath.endsWith(".xls");
 
+        // Configurar headers de respuesta según el formato
         if (esXls) {
+            // Configurar para descarga de archivo Excel
             resp.setContentType("application/vnd.ms-excel");
             resp.setHeader("Content-Disposition", "attachment; filename=productos.xls");
         } else {
+            // Configurar para visualización HTML
             resp.setContentType("text/html;charset=UTF-8");
         }
 
         try (PrintWriter out = resp.getWriter()) {
 
+            // Generar estructura HTML solo si no es una exportación Excel
             if (!esXls) {
                 out.println("<!DOCTYPE html>");
                 out.println("<html lang='es'>");
@@ -48,7 +70,7 @@ public class ProductoServletXls extends HttpServlet {
                 out.println("</head>");
                 out.println("<body class='d-flex flex-column min-vh-100'>");
 
-                // Navbar
+                // Navbar con estado de autenticación visual
                 out.println("    <nav class='navbar navbar-expand-lg navbar-dark " + (logueado ? "bg-primary" : "bg-warning") + "'>");
                 out.println("        <div class='container'>");
                 out.println("            <a class='navbar-brand' href='#'>");
@@ -74,7 +96,7 @@ public class ProductoServletXls extends HttpServlet {
                 out.println("    <div class='container-fluid py-4 flex-grow-1'>");
                 out.println("        <div class='container'>");
 
-                // Header con estado de sesión
+                // Header con estado de sesión y mensajes informativos
                 out.println("            <div class='row mb-4'>");
                 out.println("                <div class='col'>");
                 out.println("                    <h1 class='display-5 text-center " + (logueado ? "text-primary" : "text-warning") + "'>");
@@ -165,6 +187,7 @@ public class ProductoServletXls extends HttpServlet {
             out.println("    </thead>");
             out.println("    <tbody>");
 
+            // Iterar sobre productos y generar filas de tabla
             for (Producto p : productos) {
                 out.println("        <tr>");
                 out.println("            <td><strong>" + p.getIdProducto() + "</strong></td>");
@@ -179,6 +202,7 @@ public class ProductoServletXls extends HttpServlet {
             out.println("    </tbody>");
             out.println("</table>");
 
+            // Cerrar estructura HTML solo si no es exportación Excel
             if (!esXls) {
                 out.println("                            </div>");
                 // Mensaje adicional para usuarios no logueados
@@ -197,7 +221,7 @@ public class ProductoServletXls extends HttpServlet {
                 out.println("        </div>");
                 out.println("    </div>");
 
-                // Footer
+                // Footer con estado de sesión
                 out.println("    <footer class='bg-dark text-white mt-auto'>");
                 out.println("        <div class='container py-3'>");
                 out.println("            <div class='row'>");
@@ -215,6 +239,12 @@ public class ProductoServletXls extends HttpServlet {
         }
     }
 
+    /**
+     * Verifica si el usuario está autenticado revisando las cookies.
+     *
+     * @param req Solicitud HTTP para revisar cookies
+     * @return true si el usuario está autenticado, false en caso contrario
+     */
     private boolean estaLogueado(HttpServletRequest req) {
         if (req.getCookies() != null) {
             for (jakarta.servlet.http.Cookie cookie : req.getCookies()) {
